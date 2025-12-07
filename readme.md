@@ -245,7 +245,16 @@ accept
 ```
 
 ### print
-Display a text representation of the current automaton. The format of the display is the same as for [transition graph files](#file-format).
+Display a text representation of the current automaton.
+```
+> print
+if Label          Transitions
+----------------------------------------------------------------------
+!- q0             a: [q0, q2], b: [q1]
+-- q1             ^: [q2], b: [q2]
+-* q2             a: [q2]
+```
+Each row in the table represents a state. The column "if" designates the initial and final states, with a "!" denoting the initial state, and a "*" indicating a final state. The column "Label" lists the state labels. The column "Transitions" shows what transitions are defined for each state. The format for a transition is "char: [state1, state2, ...]", where char is the character consumed, and state1, state2 ... are the states that are reached by consuming that character.
 
 Alternate name: p
 
