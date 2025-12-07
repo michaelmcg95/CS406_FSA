@@ -66,7 +66,7 @@ T: ^ a aaa aaab aaabbb b bbb abbb
 F: ax abx bx ba bab
 
 Regex: (a*b*)*
-P: (* (. (* a) (* b)))
+P: (* (| a b))
 T: ^ a b aa ab ba bb aaa aab aba abb baa bab bba bbb
 F: x ax bx abx
 
@@ -265,3 +265,26 @@ Regex: (a|(b|c))*(d|(e|a))
 P: (. (* (| a b c)) (| d e a))
 T: d ae aa ad bbbe ccca e a
 F: ^ ab abc ade ed ea cde
+
+#-------------------------------------------------------------------------------
+# Regex simplification
+#-------------------------------------------------------------------------------
+Regex: (a(b|^))*
+P: (* (. a (| b ^)))
+T: ^ a aa ab abaab aba
+F: b bb abba
+
+Regex: (ab**)*
+P: (* (. a (* b)))
+T: ^ ab abab abba
+F: b
+
+Regex: (a*b*)*
+P: (* (| a b))
+T: ^ a b aa bb ab ba
+F: x
+
+Regex: ((a|^)(b*c|^)(d|^)((e|^)(f|^)|(g|h*)))*
+P: (* (| a (. (* b) c) d e f g h))
+T: ^ a c d e bbc fc
+F: b ab gbh

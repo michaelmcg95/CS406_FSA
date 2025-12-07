@@ -48,8 +48,9 @@ UNION = Operator(UNION_SYM, 1)
 CAT = Operator(CAT_SYM, 2)
 STAR = Operator(STAR_SYM, 3)
 
-
+# Regex node classes
 class Regex_Node:
+    # has_lambda attribute is True if lambda in language of regex
     def regex(self):
         pass
 
@@ -58,6 +59,8 @@ class Leaf_Node(Regex_Node):
         return self.char
 
 class Character_Node(Leaf_Node):
+    has_lambda = False
+
     def __init__(self, char):
         self.char = char
 
@@ -66,12 +69,14 @@ class Character_Node(Leaf_Node):
 
 class Lambda_Node(Leaf_Node):
     char = LAMBDA_CHAR
+    has_lambda = True
 
     def __repr__(self):
         return LAMBDA_CHAR
     
 class Null_Node(Leaf_Node):
     char = NULL_CHAR
+    has_lambda = False
 
     def __repr__(self):
         return NULL_CHAR
@@ -79,7 +84,8 @@ class Null_Node(Leaf_Node):
 class Star_Node(Regex_Node):
     def __init__(self, child):
         self.child = child
-
+        self.has_lambda = True
+    
     def __repr__(self):
         return f"({STAR_SYM} {repr(self.child)})"
     
@@ -108,6 +114,10 @@ class Bin_Op_Node(Regex_Node):
 class Cat_Node(Bin_Op_Node):
     symbol = CAT_SYM
 
+    def __init__(self, left, right):
+        super().__init__(left, right)
+        self.has_lambda = left.has_lambda and right.has_lambda
+
     def regex(self):
         left, right = self.left.regex(), self.right.regex()
         if isinstance(self.left, Union_Node):
@@ -118,6 +128,10 @@ class Cat_Node(Bin_Op_Node):
         
 class Union_Node(Bin_Op_Node):
     symbol = UNION_SYM
+
+    def __init__(self, left, right):
+        super().__init__(left, right)
+        self.has_lambda = left.has_lambda or right.has_lambda
 
     def regex(self):
         return f"{self.left.regex()}{self.symbol}{self.right.regex()}"
@@ -166,25 +180,30 @@ class Stack():
     def __repr__(self):
         return repr(self.stack)
 
-def simplify(node, desc_of_star=False):
+def simplify(node, desc_star_thru_union=False):
     """Remove redundant nodes from regex parse tree"""
 
     # simplify star node
     if isinstance(node, Star_Node):
         # remove redunant star nodes from child of star node
-        simplified_child = simplify(node.child, desc_of_star=True)
+        simplified_child = simplify(node.child, desc_star_thru_union=True)
         if simplified_child in (LAMBDA_NODE, NULL_NODE):
             return LAMBDA_NODE
-        if desc_of_star:
+        if desc_star_thru_union:
             return simplified_child
         node.child = simplified_child
         return node
     
     # binary op nodes
     if isinstance(node, Bin_Op_Node):
-        desc_of_star = False if isinstance(node, Cat_Node) else desc_of_star
-        node.left = simplify(node.left, desc_of_star)
-        node.right = simplify(node.right, desc_of_star)
+        child_desc_star_thru_union = desc_star_thru_union
+
+        # Cat node become union if it accepts lambda
+        if isinstance(node, Cat_Node) and desc_star_thru_union:
+            child_desc_star_thru_union = node.has_lambda
+
+        node.left = simplify(node.left, child_desc_star_thru_union)
+        node.right = simplify(node.right, child_desc_star_thru_union)
 
         #  simplify unions
         if isinstance(node, Union_Node):
@@ -194,18 +213,18 @@ def simplify(node, desc_of_star=False):
             if node.left== NULL_NODE:
                 return node.right
             
-            # remove null nodes and duplicates
+            # remove duplicate leaf nodes
             if node.left == node.right:
                 return node.left
             
             # remove lambda nodes in descendent of star node
-            if desc_of_star:
+            if desc_star_thru_union:
                 if node.left == LAMBDA_NODE:
                     return node.right
                 if node.right == LAMBDA_NODE:
                     return node.left
         
-        # simplify cat nodes with lambdas or nulls
+        # simplify cat nodes
         elif isinstance(node, Cat_Node):
             # remove concatenated lambda nodes
             if node.left == LAMBDA_NODE:
@@ -216,6 +235,11 @@ def simplify(node, desc_of_star=False):
             # concatenation with null node yields a null node
             if node.right == NULL_NODE or node.left == NULL_NODE:
                 return NULL_NODE
+            
+            # change to union node 
+            if desc_star_thru_union and node.has_lambda:
+                return Union_Node(node.left, node.right)
+            
     return node
 
 class Regex_Parser:
@@ -310,5 +334,7 @@ def parse(regex, simple=True):
     return tree
 
 if __name__ == "__main__":
-    print(parse("((^|a)|(b|(c|^)(^|d)))***"))
+    r = parse("((a|^)(b|^)(c|^)(d|((ei)*|^)(f|g|^)))*", simple=True)
+    print(r)
+    # print(parse("a|c|c"))
     # print(parse("ab*|a(b|a)*b"))

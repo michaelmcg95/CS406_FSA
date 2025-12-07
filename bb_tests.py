@@ -51,7 +51,7 @@ class Test_FSA_From_Regex(unittest.TestCase):
     """Test fsa created from regex string"""
     def test_fsa_regex(self):
         print_test_desc("Testing valid regexes")
-        cases = load_regex_cases("testing/regex_test_cases")
+        cases = load_regex_cases("testing/bb_cases/regex_test_cases")
         for case in cases:
             print(case.regex)
             test_nfa = NFA(regex=case.regex)
@@ -76,7 +76,7 @@ class Test_FSA_From_Regex(unittest.TestCase):
     
     def test_syntax_err(self):
         print_test_desc("Testing invalid regexes")
-        with open("testing/regex_syntax_errors", "r") as file:
+        with open("testing/bb_cases/regex_syntax_errors", "r") as file:
             lines = file.readlines()
         for line in lines:
             # remove newline

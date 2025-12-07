@@ -802,5 +802,6 @@ class DFA(FSA):
         return s 
 
 if __name__ == "__main__":
-    a = Transition_Graph(jflap="testing/wb_cases/dfa_test.jff")
-    print(a.is_dfa())
+    # a = Transition_Graph(jflap="testing/wb_cases/dfa_test.jff")
+    # print(a.is_dfa())
+    print(NFA(regex="(ab**)*"))

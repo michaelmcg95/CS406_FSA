@@ -30,7 +30,7 @@ class Regex_Case_Generator:
             new_strings = []
             for char in self.alphabet:
                 new_strings += [s + char for s in prev_len_strings]
-            self.all_strings += (new_strings)
+            self.all_strings += new_strings
             prev_len_strings = new_strings
         self.all_strings = set(self.all_strings)
 

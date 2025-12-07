@@ -26,11 +26,11 @@ T: ^ b ab aaaab bab baaab abaab babbab bbb
 F: a ba aaba x xb
 
 # Requires new init state. Final state not merged into init state
-Regex: (a*b*)*
-P: (* (. (* a) (* b)))
-N: 3
-T: ^ a b aa ab ba bb aaa aab aba abb baa bab bba bbb
-F: x ax bx abx
+Regex: (a*b*cd*)*
+P: (* (. (* a) (* b) c (* d)))
+N: 4
+T: ^ c ac bc cd aabc bbcd cddd aacd
+F: ad bd dad dbd ca a b d ba da
 
 # No new init state needed. Final state not merged into init state
 Regex: ab*
