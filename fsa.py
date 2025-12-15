@@ -295,7 +295,7 @@ class FSA:
             tree.write(file, encoding="unicode", xml_declaration=True)
 
     def __str__(self):
-        s = f"if {'Label':15}{'Transitions'}\n{"-"*70}\n"
+        s = f"if {'Label':15}Transitions\n{'-'*70}\n"
         for state in sorted(self.get_state_list(), key=lambda s: s.label):
             state_type = START_CHAR if state == self.init_state else "-"
             state_type += FINAL_CHAR if state in self.final_states else "-"
@@ -792,8 +792,8 @@ class DFA(FSA):
                 state_list.append(state)
         return state_list
 
-    def __repr__(self):
-        s = f"if {'Label':15}{'Transitions'}\n{"-"*70}\n"
+    def __str__(self):
+        s = f"if {'Label':15}Transitions\n{'-'*70}\n"
         for state in self.get_state_list():
             state_type = START_CHAR if state == self.init_state else "-"
             state_type += FINAL_CHAR if state in self.final_states else "-"
